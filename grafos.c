@@ -36,6 +36,26 @@ void destruir_grafo(ptr_grafo grafo){
     free(grafo->n); // free nos vértices
 }
 
+
+void insere_aresta(ptr_grafo grafo, int u, int v){
+    // na matriz, caso o objeto tenha conexão com o outro, na matriz, isso será dizer que ele é 1
+    grafo->adjacente[u][v] = 1; 
+    grafo->adjacente[v][u] = 1;
+
+    // não importa a direção
+}
+
+void remove_aresta(ptr_grafo grafo, int u, int v){
+    // se o objeto não tem conexão, ele é zero. Não se dá free porque 0 indica que não está conectado
+    grafo->adjacente[u][v] = 0;
+    grafo->adjacente[v][u] = 0;
+}
+
+int tem_aresta(ptr_grafo grafo, int u, int v){
+    return grafo->adjacente[u][v]; // se retornar 1, tem aresta, do contrário, não tem
+}
+
+
 int main(){
 
     

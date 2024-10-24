@@ -55,6 +55,32 @@ int tem_aresta(ptr_grafo grafo, int u, int v){
     return grafo->adjacente[u][v]; // se retornar 1, tem aresta, do contrário, não tem
 }
 
+ptr_grafo le_grafo(){
+    int qtdArestas, qtdVertices, u, v;
+    ptr_grafo grafo;
+
+    scanf("%d %d", &qtdArestas, &qtdVertices);
+
+    for(int i = 0; i < qtdVertices; i++){
+        scanf("%d %d", &u, &v);
+        insere_aresta(grafo, u, v);
+    }
+
+    return grafo;
+}
+
+void imprime_arestas(ptr_grafo grafo){
+    int u, v;
+
+    for(u = 0; u < grafo->n; u++){
+        for(v = u + 1; v < grafo->n; v++){
+            if(grafo->adjacente[u][v]){
+                printf("{%d, %d}\n", u, v);
+            }
+        }
+    }
+}
+
 
 int main(){
 

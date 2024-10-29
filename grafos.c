@@ -81,6 +81,34 @@ void imprime_arestas(ptr_grafo grafo){
     }
 }
 
+int grau(ptr_grafo grafo, int u){
+    int grau = 0;
+
+    for(int v = 0; v < grafo->n; v++){
+        if(grafo->adjacente[u][v]){ // se houver conexão entre os objetos
+            grau++;
+        }
+    }
+
+    return grau;
+}
+
+int mais_popular(ptr_grafo grafo){
+    int u, max, grauMaximo, grauAtual;
+    max = 0; 
+    grauMaximo = grau(grafo, 0);
+
+    for(u = 1; u < grafo->n; u++){
+        grauAtual = grau(grafo, u);
+
+        if(grauAtual > grauMaximo){
+            grauMaximo = grauAtual;
+            max = u;
+        }
+    }
+
+    return max; // vai retornar a quantidade de vizinhos do mais famoso
+}
 
 int main(){
 

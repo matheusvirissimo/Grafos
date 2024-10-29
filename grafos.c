@@ -110,6 +110,20 @@ int mais_popular(ptr_grafo grafo){
     return max; // vai retornar a quantidade de vizinhos do mais famoso
 }
 
+void imprimir_recomendacoes(ptr_grafo grafo, int u){
+    for(int v = 0; v < grafo->n; v++){
+        if(grafo->adjacente[u][v]){
+            for(int w = 0; w < grafo->n; w++){
+                if(grafo->adjacente[v][w] && w != u && !(grafo->adjacente[u][v])){
+                    printf("%d\n", w);
+                }
+            }
+
+        }
+    }
+
+}
+
 int main(){
 
     

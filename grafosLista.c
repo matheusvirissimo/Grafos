@@ -43,3 +43,22 @@ void destroiGrafo(ptr_grafo grafo){
     free(grafo->adjacencia);
     free(grafo);
 }
+
+ptr_no insereLista(ptr_no lista, int v){
+    ptr_no novoElemento = malloc(sizeof(NO));
+
+    novoElemento->prox = lista;
+    novoElemento->v= v;
+
+    return novoElemento;
+}
+
+void insereListaRecursivo(ptr_grafo grafo, int u, int v){
+    grafo->adjacencia[v] = insereLista(grafo->adjacencia[v], u);
+    grafo->adjacencia[u] = insereLista(grafo->adjacencia[u], v);
+}
+
+
+int main(){
+    return 0;
+}

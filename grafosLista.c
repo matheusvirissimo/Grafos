@@ -58,6 +58,27 @@ void insereListaRecursivo(ptr_grafo grafo, int u, int v){
     grafo->adjacencia[u] = insereLista(grafo->adjacencia[u], v);
 }
 
+ptr_no removeElemento(ptr_no lista, int chave){
+    ptr_no prox;
+
+    if(lista == NULL){ // não possui elemento
+        return NULL;
+    }
+    
+    if(lista->v == chave){ // se o elemento procurado for igual a chave
+        prox = lista->prox; // prox recebe o próximo elemento a lista
+        free(lista); // remove o elemento atual 
+        return prox; // retorna o novo elemenot
+    }else{
+        lista->prox = removeElemento(lista->prox, chave); // vai recursivamente pro próximo elemento
+        return lista;
+    }
+}
+
+void removeAresta(ptr_grafo grafo, int u, int v){
+    grafo->adjacencia[u] = removeElemento(grafo->adjacencia[u], v);
+    grafo->adjacencia[v] = removeElemento(grafo->adjacencia[v], u);
+}
 
 int main(){
     return 0;

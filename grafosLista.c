@@ -84,13 +84,23 @@ int possuiAresta(ptr_grafo grafo, int u, int v){
     ptr_no noAux;
 
     for(noAux = grafo->adjacencia[u]; noAux != NULL; noAux = noAux->prox){
-        if(grafo->n == v){
+        if(noAux->v == v){
             return 1; 
         }
     }
 
     return 0;
 
+}
+
+void imprimirAresta(ptr_grafo grafo){
+    ptr_no noAux;
+
+    for(int u = 0; u < grafo->n; u++){
+        for(noAux = grafo->adjacencia[u]; grafo != NULL; noAux = noAux->prox){
+            printf("{%d, %d}\n", u, noAux->v);
+        }
+    }
 }
 
 int main(){

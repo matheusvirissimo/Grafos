@@ -80,6 +80,19 @@ void removeAresta(ptr_grafo grafo, int u, int v){
     grafo->adjacencia[v] = removeElemento(grafo->adjacencia[v], u);
 }
 
+int possuiAresta(ptr_grafo grafo, int u, int v){
+    ptr_no noAux;
+
+    for(noAux = grafo->adjacencia[u]; noAux != NULL; noAux = noAux->prox){
+        if(grafo->n == v){
+            return 1; 
+        }
+    }
+
+    return 0;
+
+}
+
 int main(){
     return 0;
 }

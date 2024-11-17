@@ -103,6 +103,39 @@ void imprimirAresta(ptr_grafo grafo){
     }
 }
 
+// Componente conexa
+void visitaRecursiva(ptr_grafo grafo, int *componente, int comp, int v){
+    ptr_no noAux;
+    componente[v] = comp;
+
+    for(noAux = grafo->adjacencia[v]; comp != NULL; noAux = noAux->prox){
+        if(componente[noAux->v] == -1){
+            visitaRecursiva(grafo, componente, comp, noAux->v);
+        }
+    }
+}
+
+int * encontraComponente(ptr_grafo grafo){
+    int *componente = malloc(grafo->n * sizeof(int));
+    int c = 0;
+    int s;
+
+    for(s = 0; s < grafo->n; s++){
+        componente[s] = -1;
+    }
+
+    for(s = 0; s < grafo->n; s++){
+        if(componente[s] == -1){
+            visitaRecursiva(grafo, componente, c, s);
+            c++;
+        }
+    }
+    
+    return componente;
+}
+
+
+
 int main(){
     return 0;
 }

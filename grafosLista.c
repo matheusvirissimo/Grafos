@@ -134,6 +134,31 @@ int * encontraComponente(ptr_grafo grafo){
     return componente;
 }
 
+// 1° Busca em profundidade
+void buscaProfundidade(ptr_grafo grafo, int *pai, int atual, int v){
+    ptr_no noAux;
+
+    pai[v] = atual;
+
+    for(noAux = grafo->adjacencia[v]; noAux != NULL; noAux = noAux->prox){
+        if(pai[noAux->v] == -1){ // não foi visitado
+            buscaProfundidade(grafo, pai, v, noAux->v);
+        }
+    }
+}
+
+int * encontraCaminho(ptr_grafo grafo, int ini){
+    int *pai = malloc(grafo->n * sizeof(int));
+
+    for(int i = 0; i < grafo->n; i++){
+        pai[i] = -1;
+    }
+
+    buscaProfundidade(grafo, pai, ini, ini);
+    return pai;
+    
+}
+
 
 
 int main(){

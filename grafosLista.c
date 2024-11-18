@@ -173,7 +173,40 @@ void imprimeCaminhoReverso(int v, int *pai){
     }
 }
 
+// fazer busca com pilha
 
+//2° busca em LARGURA (fila)
+
+// Ordenação topológica
+void visitaRecursivaTopologica(ptr_grafo grafo, int *visitado, int v){
+    ptr_no noAux;
+    visitado[v] = 1;
+
+    for(noAux = grafo->adjacencia[v]; noAux != NULL; noAux = noAux->prox){
+        if(!visitado[noAux->v]){ // visitado[noAux->v] != null
+            visitaRecursivaTopologica(grafo, visitado, noAux->v);
+        }
+    }
+
+    printf("%d ", v);
+}
+
+void ordenacaoTopologica(ptr_grafo grafo){
+    int *visitado = malloc(grafo->n * sizeof(int));
+
+    for(int i = 0; i < grafo->n; i++){
+        visitado[i] = 0;
+    }
+
+    for(int i = 0; i < grafo->n; i++){
+        if(!visitado[i]){
+            visitaRecursivaTopologica(grafo, visitado, i);
+        }
+    }
+
+    free(visitado);
+    printf("\n");
+}
 
 int main(){
     return 0;

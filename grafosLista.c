@@ -3,6 +3,7 @@
 
 typedef struct no{
     int v; 
+    int peso; // djisktra
     struct no *prox; // próximo elemento conectado
 } NO;
 
@@ -14,6 +15,21 @@ typedef struct grafo{
 } GRAFO;
 
 typedef GRAFO *ptr_grafo;
+
+// Heap binário
+
+typedef struct item{
+    int prioridade; 
+    int vertice;
+} ITEM;
+
+typedef struct filaprioridade{
+    ITEM *v;
+    int *indice;
+    int n, tamanho;
+} FILAPRIORIDADE;
+
+typedef FILAPRIORIDADE * ptr_fp;
 
 ptr_grafo criarGrafo(int n){
     ptr_grafo grafo = malloc(sizeof(GRAFO));

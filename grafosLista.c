@@ -156,7 +156,21 @@ int * encontraCaminho(ptr_grafo grafo, int ini){
 
     buscaProfundidade(grafo, pai, ini, ini);
     return pai;
-    
+
+}
+
+void imprimeCaminho(int v, int *pai){
+    if(pai[v] != v){
+        imprimeCaminhoReverso(pai[v], pai);
+    }
+    printf("%d", v);
+}
+
+void imprimeCaminhoReverso(int v, int *pai){
+    printf("%d", v);
+    if(pai[v] != v){
+        imprimeCaminhoReverso(pai[v], pai);
+    }
 }
 
 

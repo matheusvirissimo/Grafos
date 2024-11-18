@@ -208,6 +208,63 @@ void ordenacaoTopologica(ptr_grafo grafo){
     printf("\n");
 }
 
+//-------------------------------------------------
+
+/* int * buscaProfundidadePilha(p_grafo g, int s) {
+    int v, w;
+    int *pai = malloc(g->n * sizeof(int));
+    int *visitado = malloc(g->n * sizeof(int));
+    p_pilha p = criarPilha();
+    for(v = 0; v < g->n; v++) {
+        pai[v] = -1;
+        visitado[v] = 0;
+    }
+    empilha(p, s);
+    pai[s] = s;
+    while(!pilhavazia(p)) {
+        v = desempilha(p);
+        visitado[v] = 1;
+        for(w = 0; w< g->n; w++) {
+            if(g->adj[v][w] && !visitado[w]) {
+                pai[w] = v;
+                empilha(p, w);
+            }
+        }
+    }
+    destroipilha(p);
+    free(visitado);
+    return pai;
+}
+
+int * buscaLarguraFila(p_grafo g, int s) {
+    int v, w;
+    int *pai = malloc(g->n * sizeof(int));
+    int *visitado = malloc(g->n * sizeof(int));
+    p_fila f = criarFila();
+    for(v = 0; v < g->n; v++) {
+        pai[v] = -1;
+        visitado[v] = 0;
+    }
+    enfilera(f, s);
+    pai[s] = s;
+    visitado[v]=1;
+    while(!filavazia(f)) {
+        v = desenfilera(f);
+        for(w = 0; w < g->n; w++) {
+            pai[w] = v;
+            visitado[w] = 1;
+            enfilera(f, w);
+        }
+    }
+    destroifila(f);
+    free(visitado);
+    return(pai);
+}
+
+*/
+
+
+
 int main(){
     return 0;
 }

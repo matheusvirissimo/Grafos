@@ -158,6 +158,63 @@ int existeCaminho(ptr_grafo grafo, int ini, int fim){
     return encontrou; // se for igual a 1, encontrou, do contrário, não existe
 }
 
+//-------------------------------------------
+
+/*
+int * buscaProfundidadePilha(p_grafo g, int s) {
+    int v, w;
+    int *pai = malloc(g->n * sizeof(int));
+    int *visitado = malloc(g->n * sizeof(int));
+    p_pilha p = criarPilha();
+    for(v = 0; v < g->n; v++) {
+        pai[v] = -1;
+        visitado[v] = 0;
+    }
+    pai[s] = s;
+    empilha(p, s);
+    while(!pilhavazia(p)) {
+        v = desenpilha(p);
+        visitado[v] = 1;
+        for(w = 0; w < g->n; w++) {
+            if(g->adj[v][w] && !visitado[w]) {
+                pai[w] = v;
+                empilha(p, w);
+            }
+        }
+    }
+    destroipilha(p);
+    free(visitado);
+    return pai;
+}
+
+int * buscaLarguraFila(p_grafo g, int s) {
+    int v, w;
+    int *pai = malloc(g->n * sizeof(int));
+    int *visitado = malloc(g->n * sizeof(int));
+    p_fila f = criarFila();
+    for(v = 0; v < g->n; v++) {
+        pai[v] = -1;
+        visitado[v] = 0;
+    }
+    pai[s] = s;
+    enfilera(f, s);
+    visitado[s] = 1;
+    while(!filavazia(f)) {
+        v = desinfilera(f);
+        for(w = 0; w < g->n; w++) {
+            pai[w] = v;
+            enfilera(f, w);
+            visitado[w] = 1;
+        }
+    }
+    destroifila(f);
+    free(visitado);
+    return pai;
+}
+
+*/
+
+
 int main(){
 
     

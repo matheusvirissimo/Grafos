@@ -312,7 +312,40 @@ int *busca_largura_fila(ptr_grafo g, int s) {
 
 
 int main(){
+    int menu;
 
+    printf("*** GRAFOS PARA MATRIZ DE ADJACENCIA ***\n\n");
+
+    while(1){
+        printf("1. Busca em largura\n");
+        printf("2. Busca em profundidade\n");
+        printf("3. Algoritmo de Djisktra\n");
+        printf("4. Arvore Geradora Minima\n");
+        printf("5. Sair\n");
+        printf("Digite sua opcao: ");
+        scanf("%d", &menu);
+
+        switch(menu){
+            case 1:
+                
+                break;
+            case 2:
+                
+                break;
+            case 3:
+                
+                break;
+            case 4:
+                
+                break;
+            case 5:
+                printf("Finalizando.\n");
+                return 0;
+                break;
+            default:
+                break;
+        }
+    }
     
     return 0; 
 }

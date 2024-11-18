@@ -15,11 +15,97 @@ typedef struct grafo{
 
 typedef GRAFO *ptr_grafo;
 
+// Funções para pilha
+typedef struct pilha {
+    int *elementos;
+    int topo;
+    int tamanho;
+} PILHA;
+
+PILHA *criarPilha(int tamanho) {
+    PILHA *p = malloc(sizeof(PILHA));
+    p->elementos = malloc(tamanho * sizeof(int));
+    p->topo = -1;
+    p->tamanho = tamanho;
+    return p;
+}
+
+void empilhar(PILHA *p, int v) {
+    if (p->topo < p->tamanho - 1) {
+        p->elementos[++p->topo] = v;
+    }
+}
+
+int desempilhar(PILHA *p) {
+    if (p->topo >= 0) {
+        return p->elementos[p->topo--];
+    }
+    return -1; // Retorna -1 se a pilha estiver vazia
+}
+
+int pilhaVazia(PILHA *p) {
+    return p->topo == -1;
+}
+
+void destruirPilha(PILHA *p) {
+    free(p->elementos);
+    free(p);
+}
+
+
+// Funções para fila
+typedef struct fila {
+    int *elementos;
+    int inicio;
+    int fim;
+    int tamanho;
+    int capacidade;
+} FILA;
+
+FILA *criarFila(int capacidade) {
+    FILA *f = malloc(sizeof(FILA));
+    f->elementos = malloc(capacidade * sizeof(int));
+    f->inicio = 0;
+    f->fim = 0;
+    f->tamanho = 0;
+    f->capacidade = capacidade;
+    return f;
+}
+
+void enfileirar(FILA *f, int v) {
+    if (f->tamanho < f->capacidade) {
+        f->elementos[f->fim] = v;
+        f->fim = (f->fim + 1) % f->capacidade;
+        f->tamanho++;
+    }
+}
+
+int desenfileirar(FILA *f) {
+    if (f->tamanho > 0) {
+        int v = f->elementos[f->inicio];
+        f->inicio = (f->inicio + 1) % f->capacidade;
+        f->tamanho--;
+        return v;
+    }
+    return -1; // Retorna -1 se a fila estiver vazia
+}
+
+int filaVazia(FILA *f) {
+    return f->tamanho == 0;
+}
+
+void destruirFila(FILA *f) {
+    free(f->elementos);
+    free(f);
+}
+
+// funções para grafo
+
 ptr_grafo criarGrafo(int n){
     ptr_grafo grafo = malloc(sizeof(GRAFO));
 
     grafo->n = n;
-    grafo->adjacencia = (n * sizeof(ptr_no));
+grafo->adjacencia = malloc(n * sizeof(ptr_no));
 
     for(int i = 0; i < n; i++){
         grafo->adjacencia[i] = NULL;
@@ -108,7 +194,7 @@ void visitaRecursiva(ptr_grafo grafo, int *componente, int comp, int v){
     ptr_no noAux;
     componente[v] = comp;
 
-    for(noAux = grafo->adjacencia[v]; comp != NULL; noAux = noAux->prox){
+for (noAux = grafo->adjacencia[v]; noAux != NULL; noAux = noAux->prox) {
         if(componente[noAux->v] == -1){
             visitaRecursiva(grafo, componente, comp, noAux->v);
         }
@@ -159,6 +245,13 @@ int * encontraCaminho(ptr_grafo grafo, int ini){
 
 }
 
+void imprimeCaminhoReverso(int v, int *pai){
+    printf("%d", v);
+    if(pai[v] != v){
+        imprimeCaminhoReverso(pai[v], pai);
+    }
+}
+
 void imprimeCaminho(int v, int *pai){
     if(pai[v] != v){
         imprimeCaminhoReverso(pai[v], pai);
@@ -166,12 +259,7 @@ void imprimeCaminho(int v, int *pai){
     printf("%d", v);
 }
 
-void imprimeCaminhoReverso(int v, int *pai){
-    printf("%d", v);
-    if(pai[v] != v){
-        imprimeCaminhoReverso(pai[v], pai);
-    }
-}
+
 
 // fazer busca com pilha
 
@@ -210,58 +298,69 @@ void ordenacaoTopologica(ptr_grafo grafo){
 
 //-------------------------------------------------
 
-/* int * buscaProfundidadePilha(p_grafo g, int s) {
-    int v, w;
-    int *pai = malloc(g->n * sizeof(int));
-    int *visitado = malloc(g->n * sizeof(int));
-    p_pilha p = criarPilha();
-    for(v = 0; v < g->n; v++) {
-        pai[v] = -1;
-        visitado[v] = 0;
+// Busca em profundidade com pilha
+int *buscaProfundidadePilha(ptr_grafo grafo, int s) {
+    PILHA *pilha = criarPilha(grafo->n);
+    int *pai = malloc(grafo->n * sizeof(int));
+    int *visitado = malloc(grafo->n * sizeof(int));
+    for (int i = 0; i < grafo->n; i++) {
+        pai[i] = -1;
+        visitado[i] = 0;
     }
-    empilha(p, s);
+
+    empilhar(pilha, s);
     pai[s] = s;
-    while(!pilhavazia(p)) {
-        v = desempilha(p);
-        visitado[v] = 1;
-        for(w = 0; w< g->n; w++) {
-            if(g->adj[v][w] && !visitado[w]) {
-                pai[w] = v;
-                empilha(p, w);
+
+    while (!pilhaVazia(pilha)) {
+        int v = desempilhar(pilha);
+        if (!visitado[v]) {
+            visitado[v] = 1;
+            ptr_no noAux;
+            for (noAux = grafo->adjacencia[v]; noAux != NULL; noAux = noAux->prox) {
+                if (!visitado[noAux->v]) {
+                    empilhar(pilha, noAux->v);
+                    pai[noAux->v] = v;
+                }
             }
         }
     }
-    destroipilha(p);
+
+    destruirPilha(pilha);
     free(visitado);
     return pai;
 }
 
-int * buscaLarguraFila(p_grafo g, int s) {
-    int v, w;
-    int *pai = malloc(g->n * sizeof(int));
-    int *visitado = malloc(g->n * sizeof(int));
-    p_fila f = criarFila();
-    for(v = 0; v < g->n; v++) {
-        pai[v] = -1;
-        visitado[v] = 0;
+// Busca em largura com fila
+int *buscaLarguraFila(ptr_grafo grafo, int s) {
+    FILA *fila = criarFila(grafo->n);
+    int *pai = malloc(grafo->n * sizeof(int));
+    int *visitado = malloc(grafo->n * sizeof(int));
+    for (int i = 0; i < grafo->n; i++) {
+        pai[i] = -1;
+        visitado[i] = 0;
     }
-    enfilera(f, s);
+
+    enfileirar(fila, s);
     pai[s] = s;
-    visitado[v]=1;
-    while(!filavazia(f)) {
-        v = desenfilera(f);
-        for(w = 0; w < g->n; w++) {
-            pai[w] = v;
-            visitado[w] = 1;
-            enfilera(f, w);
+    visitado[s] = 1;
+
+    while (!filaVazia(fila)) {
+        int v = desenfileirar(fila);
+        ptr_no noAux;
+        for (noAux = grafo->adjacencia[v]; noAux != NULL; noAux = noAux->prox) {
+            if (!visitado[noAux->v]) {
+                visitado[noAux->v] = 1;
+                pai[noAux->v] = v;
+                enfileirar(fila, noAux->v);
+            }
         }
     }
-    destroifila(f);
+
+    destruirFila(fila);
     free(visitado);
-    return(pai);
+    return pai;
 }
 
-*/
 
 
 

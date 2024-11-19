@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 typedef struct no{
     int v; 
@@ -279,7 +280,114 @@ int * buscaLarguraFila(p_grafo g, int s) {
 
 */
 
+// códigos de fila com prioridade
 
+// Função para criar a fila de prioridade
+ptr_fp criarFilaPrioridade(int tamanho) {
+    ptr_fp fila = malloc(sizeof(FILAPRIORIDADE));
+    fila->v = malloc(tamanho * sizeof(ITEM));
+    fila->indice = malloc(tamanho * sizeof(int));
+    fila->n = tamanho;
+    fila->tamanho = 0;
+    for (int i = 0; i < tamanho; i++)
+        fila->indice[i] = -1; // Inicialmente, nenhum vértice está na fila
+    return fila;
+}
+
+// Função para inserir um elemento na fila de prioridade
+void insereFilaPrioridade(ptr_fp fila, int vertice, int prioridade) {
+    fila->v[fila->tamanho].vertice = vertice;
+    fila->v[fila->tamanho].prioridade = prioridade;
+    fila->indice[vertice] = fila->tamanho;
+    fila->tamanho++;
+}
+
+// Função para diminuir a prioridade de um elemento
+void diminuirPrioridade(ptr_fp fila, int vertice, int novaPrioridade) {
+    int i = fila->indice[vertice];
+    fila->v[i].prioridade = novaPrioridade;
+
+    // Realoca o item para cima no heap para restaurar a ordem
+    while (i > 0 && fila->v[(i - 1) / 2].prioridade > fila->v[i].prioridade) {
+        ITEM temp = fila->v[i];
+        fila->v[i] = fila->v[(i - 1) / 2];
+        fila->v[(i - 1) / 2] = temp;
+        fila->indice[fila->v[i].vertice] = i;
+        fila->indice[fila->v[(i - 1) / 2].vertice] = (i - 1) / 2;
+        i = (i - 1) / 2;
+    }
+}
+
+// Função para verificar se a fila está vazia
+int filaPrioridadeVazia(ptr_fp fila) {
+    return fila->tamanho == 0;
+}
+
+// Função para obter a prioridade de um elemento
+int prioridade(ptr_fp fila, int vertice) {
+    int i = fila->indice[vertice];
+    return (i != -1) ? fila->v[i].prioridade : INT_MAX;
+}
+
+// Função para extrair o elemento com menor prioridade
+int extraiMinimo(ptr_fp fila) {
+    if (filaPrioridadeVazia(fila)) return -1;
+
+    int minVertice = fila->v[0].vertice;
+    fila->v[0] = fila->v[fila->tamanho - 1];
+    fila->indice[fila->v[0].vertice] = 0;
+    fila->tamanho--;
+
+    // Reorganiza o heap
+    int i = 0;
+    while (2 * i + 1 < fila->tamanho) {
+        int menorFilho = 2 * i + 1;
+        if (menorFilho + 1 < fila->tamanho && fila->v[menorFilho + 1].prioridade < fila->v[menorFilho].prioridade)
+            menorFilho++;
+
+        if (fila->v[i].prioridade <= fila->v[menorFilho].prioridade)
+            break;
+
+        ITEM temp = fila->v[i];
+        fila->v[i] = fila->v[menorFilho];
+        fila->v[menorFilho] = temp;
+        fila->indice[fila->v[i].vertice] = i;
+        fila->indice[fila->v[menorFilho].vertice] = menorFilho;
+
+        i = menorFilho;
+    }
+    return minVertice;
+}
+
+// 3° Dijkstra
+int * dijkstra(ptr_grafo grafo, int s){
+    int *pai = malloc(grafo->n * sizeof(int));
+    int v;
+
+    ptr_no noAux;
+    ptr_fp filap = criarFilaPrioridade(grafo->n); 
+    for(v = 0; v < grafo->n; v++){
+        pai[v] = -1;
+        insereFilaPrioridade(filap, v, INT_MAX); 
+    }
+
+    pai[s] = s;
+    diminuirPrioridade(filap, s, 0); 
+    while(!filaPrioridadeVazia(filap)){ 
+        v = extraiMinimo(filap); 
+        if(prioridade(filap, v) != INT_MAX){ 
+            for(noAux = grafo->adjacencia[v]; noAux != NULL; noAux = noAux->prox){
+                if(prioridade(filap, v)+noAux->peso < prioridadade(filap, noAux->v)){
+                    diminuiPrioridade(filap, noAux->v, (prioridade(filap, v)+noAux->peso));
+                    pai[noAux->v] = v;
+                }
+            }
+        }
+    }
+
+    return pai;
+
+}
 
 int main(){
     return 0;

@@ -1,222 +1,338 @@
+// !!! NÃO CONSEGUIMOS IMPLEMENTAR A ÁRVORE GERADORA MÍNIMA EFICIENTEMENTE E ATRIBUI-LA AO CÓDIGO. !!!
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+
 typedef struct grafo{
     int **adjacente; 
     int n; // quantidade de vértices
 } Grafo;
 
-typedef Grafo *ptr_grafo; // == ponteiro_grafo nova_variavel. É só pra facilitar que se coloca assim. Vai-se utilizar bastante ponteiro
+typedef Grafo *ptr_grafo;
 
-ptr_grafo criar_grafo(int n){
-    int i, j;
-    ptr_grafo novoGrafo = malloc(sizeof(Grafo)); // aloca memória para o novo grafo que será construido. Não é necessário fazer casting
+typedef struct pilha {
+    int *dados;
+    int topo;
+    int capacidade;
+} Pilha;
 
-    novoGrafo->n = n; // vai receber a quantidade de vértices existentes
-    novoGrafo->adjacente = malloc(n * sizeof(int *)); // a lista de adjacência vai alocar memória para cada vértice 
+typedef Pilha *ptr_pilha;
 
-    for(i = 0; i < n; i++){
-        novoGrafo->adjacente[i] = malloc(n * sizeof(int)); // aloca memória para cada elemento
-    }
+typedef struct fila {
+    int *dados;
+    int inicio;
+    int fim;
+    int tamanho;
+    int capacidade;
+} Fila;
 
-    for(i = 0; i < n; i++){
-        for(j = 0; j < n; j++){
-            novoGrafo->adjacente[i][j] = 0; // para cada elemento da matriz de adjacência, sera alocado, inicialmente, 0.
+typedef Fila *ptr_fila;
+
+// Funções para pilha
+ptr_pilha criar_pilha(int capacidade) {
+    ptr_pilha p = malloc(sizeof(Pilha));
+    p->dados = malloc(capacidade * sizeof(int));
+    p->topo = -1;
+    p->capacidade = capacidade;
+    return p;
+}
+
+int pilha_vazia(ptr_pilha p) {
+    return p->topo == -1;
+}
+
+void empilha(ptr_pilha p, int valor) {
+    p->dados[++p->topo] = valor;
+}
+
+int desempilha(ptr_pilha p) {
+    return p->dados[p->topo--];
+}
+
+void destruir_pilha(ptr_pilha p) {
+    free(p->dados);
+    free(p);
+}
+
+// Funções para fila
+ptr_fila criar_fila(int capacidade) {
+    ptr_fila f = malloc(sizeof(Fila));
+    f->dados = malloc(capacidade * sizeof(int));
+    f->inicio = 0;
+    f->fim = 0;
+    f->tamanho = 0;
+    f->capacidade = capacidade;
+    return f;
+}
+
+int fila_vazia(ptr_fila f) {
+    return f->tamanho == 0;
+}
+
+void enfileira(ptr_fila f, int valor) {
+    f->dados[f->fim] = valor;
+    f->fim = (f->fim + 1) % f->capacidade;
+    f->tamanho++;
+}
+
+int desenfileira(ptr_fila f) {
+    int valor = f->dados[f->inicio];
+    f->inicio = (f->inicio + 1) % f->capacidade;
+    f->tamanho--;
+    return valor;
+}
+
+void destruir_fila(ptr_fila f) {
+    free(f->dados);
+    free(f);
+}
+
+// Funções para grafo
+ptr_grafo criar_grafo(int n) {
+    ptr_grafo novoGrafo = malloc(sizeof(Grafo));
+    novoGrafo->n = n;
+    novoGrafo->adjacente = malloc(n * sizeof(int *));
+    for (int i = 0; i < n; i++) {
+        novoGrafo->adjacente[i] = malloc(n * sizeof(int));
+        for (int j = 0; j < n; j++) {
+            novoGrafo->adjacente[i][j] = INT_MAX; // Sem aresta inicialmente
         }
     }
-
     return novoGrafo;
-
 }
 
-void destruir_grafo(ptr_grafo grafo){
-    int i; 
-    for(i = 0; i < grafo->n; i++){
-        free(grafo->adjacente[i]); // livra cada um dos elementos contido na lista
+void destruir_grafo(ptr_grafo grafo) {
+    for (int i = 0; i < grafo->n; i++) {
+        free(grafo->adjacente[i]);
+    }
+    free(grafo->adjacente);
+    free(grafo);
+}
+
+// Insere aresta no grafo
+void insere_aresta(ptr_grafo grafo, int u, int v, int peso) {
+    grafo->adjacente[u][v] = peso;
+    grafo->adjacente[v][u] = peso; // Grafo não-direcionado
+}
+
+// Funções para busca em largura
+int *busca_largura_fila(ptr_grafo g, int s) {
+    int *pai = malloc(g->n * sizeof(int));
+    int *visitado = malloc(g->n * sizeof(int));
+    ptr_fila f = criar_fila(g->n);
+
+    for (int v = 0; v < g->n; v++) {
+        pai[v] = -1;
+        visitado[v] = 0;
     }
 
-    free(grafo->adjacente); // dá free na lista em si
-    free(grafo->n); // free nos vértices
-}
+    enfileira(f, s);
+    pai[s] = s;
+    visitado[s] = 1;
 
-
-void insere_aresta(ptr_grafo grafo, int u, int v){
-    // na matriz, caso o objeto tenha conexão com o outro, na matriz, isso será dizer que ele é 1
-    grafo->adjacente[u][v] = 1; 
-    grafo->adjacente[v][u] = 1;
-
-    // não importa a direção
-}
-
-void remove_aresta(ptr_grafo grafo, int u, int v){
-    // se o objeto não tem conexão, ele é zero. Não se dá free porque 0 indica que não está conectado
-    grafo->adjacente[u][v] = 0;
-    grafo->adjacente[v][u] = 0;
-}
-
-int tem_aresta(ptr_grafo grafo, int u, int v){
-    return grafo->adjacente[u][v]; // se retornar 1, tem aresta, do contrário, não tem
-}
-
-ptr_grafo le_grafo(){
-    int qtdArestas, qtdVertices, u, v;
-    ptr_grafo grafo;
-
-    scanf("%d %d", &qtdArestas, &qtdVertices);
-
-    for(int i = 0; i < qtdVertices; i++){
-        scanf("%d %d", &u, &v);
-        insere_aresta(grafo, u, v);
-    }
-
-    return grafo;
-}
-
-void imprime_arestas(ptr_grafo grafo){
-    int u, v;
-
-    for(u = 0; u < grafo->n; u++){
-        for(v = u + 1; v < grafo->n; v++){
-            if(grafo->adjacente[u][v]){
-                printf("{%d, %d}\n", u, v);
+    while (!fila_vazia(f)) {
+        int v = desenfileira(f);
+        for (int w = 0; w < g->n; w++) {
+            if (g->adjacente[v][w] != INT_MAX && !visitado[w]) {
+                pai[w] = v;
+                enfileira(f, w);
+                visitado[w] = 1;
             }
         }
     }
+
+    destruir_fila(f);
+    free(visitado);
+    return pai;
 }
 
-int grau(ptr_grafo grafo, int u){
-    int grau = 0;
+// Funções para busca em profundidade
+int *busca_profundidade_pilha(ptr_grafo g, int s) {
+    int *pai = malloc(g->n * sizeof(int));
+    int *visitado = malloc(g->n * sizeof(int));
+    ptr_pilha p = criar_pilha(g->n);
 
-    for(int v = 0; v < grafo->n; v++){
-        if(grafo->adjacente[u][v]){ // se houver conexão entre os objetos
-            grau++;
-        }
+    for (int v = 0; v < g->n; v++) {
+        pai[v] = -1;
+        visitado[v] = 0;
     }
 
-    return grau;
-}
+    empilha(p, s);
+    pai[s] = s;
 
-int mais_popular(ptr_grafo grafo){
-    int u, max, grauMaximo, grauAtual;
-    max = 0; 
-    grauMaximo = grau(grafo, 0);
-
-    for(u = 1; u < grafo->n; u++){
-        grauAtual = grau(grafo, u);
-
-        if(grauAtual > grauMaximo){
-            grauMaximo = grauAtual;
-            max = u;
-        }
-    }
-
-    return max; // vai retornar a quantidade de vizinhos do mais famoso
-}
-
-void imprimir_recomendacoes(ptr_grafo grafo, int u){
-    for(int v = 0; v < grafo->n; v++){
-        if(grafo->adjacente[u][v]){
-            for(int w = 0; w < grafo->n; w++){
-                if(grafo->adjacente[v][w] && w != u && !(grafo->adjacente[u][v])){
-                    printf("%d\n", w);
+    while (!pilha_vazia(p)) {
+        int v = desempilha(p);
+        if (!visitado[v]) {
+            visitado[v] = 1;
+            for (int w = 0; w < g->n; w++) {
+                if (g->adjacente[v][w] != INT_MAX && !visitado[w]) {
+                    pai[w] = v;
+                    empilha(p, w);
                 }
             }
-
         }
     }
 
+    destruir_pilha(p);
+    free(visitado);
+    return pai;
 }
 
-// 1° Busca de profundidade
-int buscaRecursiva(ptr_grafo grafo, int *visitado, int ini, int fim){
-    if(ini == fim){
-        return 1; // sempre existe caminho para o mesmo valor
-    }
-
-    visitado[ini] = 1; // primeiro valor já foi visitado, isso é, ele não é igual ao final
-
-    for(int atual = 0; atual < grafo->n; atual++){
-        if(grafo->adjacente[ini][atual] && !visitado[atual]){ // visitado[atual] == 0
-            if(buscaRecursiva(grafo, visitado, atual, fim)){
-                return 1;
-            }
+// Funções para Dijkstra
+int menor_distancia(int *distancia, int *visitado, int n) {
+    int min = INT_MAX, indice_min = -1;
+    for (int i = 0; i < n; i++) {
+        if (!visitado[i] && distancia[i] < min) {
+            min = distancia[i];
+            indice_min = i;
         }
     }
-
-    return 0; // não foi encontrado
+    return indice_min;
 }
 
-int existeCaminho(ptr_grafo grafo, int ini, int fim){
-    int encontrou;
+int *dijkstra(ptr_grafo grafo, int origem) {
+    int *distancia = malloc(grafo->n * sizeof(int));
+    int *pai = malloc(grafo->n * sizeof(int));
     int *visitado = malloc(grafo->n * sizeof(int));
 
-    // vamos fazer uma segunda matriz para indicar qual valor já foi visitado ou não
-    for(int i = 0; i < grafo->n; i++){
-        visitado[i] = 0; // todos os valores da nova matriz, serão, inicialmente 0
+    for (int i = 0; i < grafo->n; i++) {
+        distancia[i] = INT_MAX;
+        pai[i] = -1;
+        visitado[i] = 0;
     }
 
-    encontrou = buscaRecursiva(grafo, visitado, ini, fim);
-    free(visitado);
+    distancia[origem] = 0;
+    pai[origem] = origem;
 
-    return encontrou; // se for igual a 1, encontrou, do contrário, não existe
-}
+    for (int i = 0; i < grafo->n - 1; i++) {
+        int u = menor_distancia(distancia, visitado, grafo->n);
+        if (u == -1) break;
+        visitado[u] = 1;
 
-//-------------------------------------------
-
-/*
-int * buscaProfundidadePilha(p_grafo g, int s) {
-    int v, w;
-    int *pai = malloc(g->n * sizeof(int));
-    int *visitado = malloc(g->n * sizeof(int));
-    p_pilha p = criarPilha();
-    for(v = 0; v < g->n; v++) {
-        pai[v] = -1;
-        visitado[v] = 0;
-    }
-    pai[s] = s;
-    empilha(p, s);
-    while(!pilhavazia(p)) {
-        v = desenpilha(p);
-        visitado[v] = 1;
-        for(w = 0; w < g->n; w++) {
-            if(g->adj[v][w] && !visitado[w]) {
-                pai[w] = v;
-                empilha(p, w);
+        for (int v = 0; v < grafo->n; v++) {
+            if (!visitado[v] && grafo->adjacente[u][v] != INT_MAX &&
+                distancia[u] + grafo->adjacente[u][v] < distancia[v]) {
+                distancia[v] = distancia[u] + grafo->adjacente[u][v];
+                pai[v] = u;
             }
         }
     }
-    destroipilha(p);
+
     free(visitado);
     return pai;
 }
 
-int * buscaLarguraFila(p_grafo g, int s) {
-    int v, w;
-    int *pai = malloc(g->n * sizeof(int));
-    int *visitado = malloc(g->n * sizeof(int));
-    p_fila f = criarFila();
-    for(v = 0; v < g->n; v++) {
-        pai[v] = -1;
-        visitado[v] = 0;
+// Imprimir caminho
+void imprimir_caminho(int v, int *pai) {
+    if (pai[v] != v) {
+        imprimir_caminho(pai[v], pai);
     }
-    pai[s] = s;
-    enfilera(f, s);
-    visitado[s] = 1;
-    while(!filavazia(f)) {
-        v = desinfilera(f);
-        for(w = 0; w < g->n; w++) {
-            pai[w] = v;
-            enfilera(f, w);
-            visitado[w] = 1;
+    printf("%d ", v);
+}
+
+// Main
+int main() {
+    int menu, n, u, v, s, peso;
+    ptr_grafo grafo = NULL;
+
+    printf("*** GRAFOS PARA MATRIZ DE ADJACENCIA ***\n\n");
+
+    while (1) {
+        printf("\n1. Criar grafo\n");
+        printf("2. Inserir aresta\n");
+        printf("3. Dijkstra\n");
+        printf("4. Busca em Largura\n");
+        printf("5. Busca em Profundidade\n");
+        printf("6. Sair\n");
+        printf("Digite sua opcao: ");
+        scanf("%d", &menu);
+
+        switch (menu) {
+            case 1:
+                printf("Digite o número de vértices: ");
+                scanf("%d", &n);
+                grafo = criar_grafo(n);
+                printf("Grafo com %d vértices criado.\n", n);
+                break;
+
+            case 2:
+                if (grafo == NULL) {
+                    printf("Crie o grafo primeiro.\n");
+                    break;
+                }
+                printf("Digite o vértice de origem, destino e peso da aresta (u v peso): ");
+                scanf("%d %d %d", &u, &v, &peso);
+                insere_aresta(grafo, u, v, peso);
+                printf("Aresta (%d, %d) com peso %d inserida.\n", u, v, peso);
+                break;
+
+            case 3:
+                if (grafo == NULL) {
+                    printf("Crie o grafo primeiro.\n");
+                    break;
+                }
+                printf("Digite o vértice de origem para Dijkstra: ");
+                scanf("%d", &s);
+                int *paiDijkstra = dijkstra(grafo, s);
+                printf("Caminhos mínimos a partir do vértice %d:\n", s);
+                for (int i = 0; i < grafo->n; i++) {
+                    if (paiDijkstra[i] != -1) {
+                        printf("Caminho até %d: ", i);
+                        imprimir_caminho(i, paiDijkstra);
+                        printf("\n");
+                    }
+                }
+                free(paiDijkstra);
+                break;
+
+            case 4:
+                if (grafo == NULL) {
+                    printf("Crie o grafo primeiro.\n");
+                    break;
+                }
+                printf("Digite o vértice de origem para Busca em Largura: ");
+                scanf("%d", &s);
+                int *paiLargura = busca_largura_fila(grafo, s);
+                printf("Árvore de busca em largura a partir do vértice %d:\n", s);
+                for (int i = 0; i < grafo->n; i++) {
+                    if (paiLargura[i] != -1) {
+                        printf("Caminho até %d: ", i);
+                        imprimir_caminho(i, paiLargura);
+                        printf("\n");
+                    }
+                }
+                free(paiLargura);
+                break;
+
+            case 5:
+                if (grafo == NULL) {
+                    printf("Crie o grafo primeiro.\n");
+                    break;
+                }
+                printf("Digite o vértice de origem para Busca em Profundidade: ");
+                scanf("%d", &s);
+                int *paiProfundidade = busca_profundidade_pilha(grafo, s);
+                printf("Árvore de busca em profundidade a partir do vértice %d:\n", s);
+                for (int i = 0; i < grafo->n; i++) {
+                    if (paiProfundidade[i] != -1) {
+                        printf("Caminho até %d: ", i);
+                        imprimir_caminho(i, paiProfundidade);
+                        printf("\n");
+                    }
+                }
+                free(paiProfundidade);
+                break;
+
+            case 6:
+                printf("Finalizando.\n");
+                if (grafo != NULL) destruir_grafo(grafo);
+                return 0;
+
+            default:
+                printf("Opção inválida.\n");
+                break;
         }
     }
-    destroifila(f);
-    free(visitado);
-    return pai;
-}
-
-*/
-
-
-int main(){
-
-    
-    return 0; 
+    return 0;
 }

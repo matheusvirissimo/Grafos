@@ -280,7 +280,7 @@ int * buscaLarguraFila(p_grafo g, int s) {
 
 */
 
-// códigos de fila com prioridade
+// códigos de fila com prioridade - LLM
 
 // Função para criar a fila de prioridade
 ptr_fp criarFilaPrioridade(int tamanho) {
@@ -387,6 +387,45 @@ int * dijkstra(ptr_grafo grafo, int s){
 
     return pai;
 
+}
+
+// 4° Árvore Geradora Mínima
+// Função para encontrar a Árvore Geradora Mínima usando Prim
+int* arvoreGeradoraMinima(ptr_grafo grafo, int s) {
+    int *pai = malloc(grafo->n * sizeof(int)); // Armazena o pai de cada nó na MST
+    int *custo = malloc(grafo->n * sizeof(int)); // Armazena o peso mínimo para cada nó
+    int v;
+
+    ptr_no noAux;
+    ptr_fp filap = criarFilaPrioridade(grafo->n);
+    for (v = 0; v < grafo->n; v++) {
+        pai[v] = -1;
+        custo[v] = INT_MAX;
+        insereFilaPrioridade(filap, v, INT_MAX);
+    }
+
+    pai[s] = s;
+    custo[s] = 0;
+    diminuirPrioridade(filap, s, 0);
+
+    while (!filaPrioridadeVazia(filap)) {
+        v = extraiMinimo(filap);
+
+        for (noAux = grafo->adjacencia[v]; noAux != NULL; noAux = noAux->prox) {
+            int u = noAux->v;
+            int peso = noAux->peso;
+
+            // Verifica se u ainda está na fila e se podemos diminuir o peso
+            if (prioridade(filap, u) > peso) {
+                pai[u] = v;
+                custo[u] = peso;
+                diminuirPrioridade(filap, u, peso);
+            }
+        }
+    }
+
+    free(custo);
+    return pai;
 }
 
 int main(){
